@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Parse парсит JSON-строку запроса в структуру Query
+// Parse парсит json-строку запроса в структуру Query
 func Parse(jsonStr string) (*Query, error) {
 	if jsonStr == "" {
 		return &Query{
@@ -21,7 +21,7 @@ func Parse(jsonStr string) (*Query, error) {
 	return &Query{Conditions: conditions}, nil
 }
 
-// ParseDocument парсит JSON-строку документа
+// ParseDocument парсит json-строку документа
 func ParseDocument(jsonStr string) (map[string]any, error) {
 	var doc map[string]any
 	if err := json.Unmarshal([]byte(jsonStr), &doc); err != nil {

@@ -5,22 +5,26 @@ import (
 	"reflect"
 )
 
-// CompareEq проверяет равенство значений
+// CompareEq возвращает true, если fieldValue == queryValue
 func CompareEq(fieldValue, queryValue any) bool {
 	return reflect.DeepEqual(fieldValue, queryValue)
 }
 
-// CompareGt проверяет больше (>)
+// CompareGt возвращает true, если fieldValue > queryValue
 func CompareGt(fieldValue, queryValue any) bool {
-	return compareNumeric(fieldValue, queryValue, func(a, b float64) bool { return a > b })
+	return compareNumeric(fieldValue, queryValue, func(a, b float64) bool {
+		return a > b
+	})
 }
 
-// CompareLt проверяет меньше (<)
+// CompareLt возвращает true, если fieldValue < queryValue
 func CompareLt(fieldValue, queryValue any) bool {
-	return compareNumeric(fieldValue, queryValue, func(a, b float64) bool { return a < b })
+	return compareNumeric(fieldValue, queryValue, func(a, b float64) bool {
+		return a < b
+	})
 }
 
-// CompareLike проверяет строку с wildcard-паттерном (% - любая строка, _ - один символ)
+// CompareLike возвращает true, если fieldValue соответствует шаблону like
 func CompareLike(fieldValue, pattern any) bool {
 	fieldStr, ok1 := fieldValue.(string)
 	patternStr, ok2 := pattern.(string)
@@ -28,15 +32,11 @@ func CompareLike(fieldValue, pattern any) bool {
 		return false
 	}
 
-	// Конвертируем SQL LIKE паттерн в regex-подобную проверку
-	// % -> любая последовательность символов
-	// _ -> один символ
 	return matchLikePattern(fieldStr, patternStr)
 }
 
-// CompareIn проверяет принадлежность к массиву значений
+// CompareIn возвращает true, если fieldValue содержится в values
 func CompareIn(fieldValue any, values any) bool {
-	// values должен быть массивом
 	valuesSlice, ok := values.([]any)
 	if !ok {
 		return false
@@ -50,7 +50,7 @@ func CompareIn(fieldValue any, values any) bool {
 	return false
 }
 
-// compareNumeric - вспомогательная функция для сравнения числовых значений
+// compareNumeric вспомогательная функция для сравнения числовых значений
 func compareNumeric(a, b any, cmp func(float64, float64) bool) bool {
 	aNum, err1 := toFloat64(a)
 	bNum, err2 := toFloat64(b)
@@ -60,7 +60,7 @@ func compareNumeric(a, b any, cmp func(float64, float64) bool) bool {
 	return cmp(aNum, bNum)
 }
 
-// toFloat64 конвертирует различные числовые типы в float64
+// toFloat64 вспомогательная функция для конвертации в float64
 func toFloat64(val any) (float64, error) {
 	switch v := val.(type) {
 	case float64:
@@ -84,33 +84,33 @@ func toFloat64(val any) (float64, error) {
 	}
 }
 
-// matchLikePattern проверяет соответствие строки LIKE-паттерну
+// matchLikePattern вспомогательная функция для сопоставления строки с шаблоном like
 func matchLikePattern(str, pattern string) bool {
 	return matchLikeHelper(str, pattern, 0, 0)
 }
 
+// matchLikeHelper функция для сопоставления строки с like
 func matchLikeHelper(str, pattern string, strIdx, patIdx int) bool {
-	// Если оба индекса достигли конца - совпадение
+
+	// strIdx и patIdx - текущие индексы в строке и паттерне
 	if strIdx == len(str) && patIdx == len(pattern) {
 		return true
 	}
 
-	// Если паттерн закончился, а строка нет - не совпадение
 	if patIdx == len(pattern) {
 		return false
 	}
 
-	// Обработка %
+	// обработка %
 	if pattern[patIdx] == '%' {
-		// Пропускаем последовательные %
 		for patIdx < len(pattern) && pattern[patIdx] == '%' {
 			patIdx++
 		}
-		// Если % в конце паттерна - всегда совпадение
+
 		if patIdx == len(pattern) {
 			return true
 		}
-		// Пробуем сопоставить остаток паттерна с различными позициями строки
+
 		for i := strIdx; i <= len(str); i++ {
 			if matchLikeHelper(str, pattern, i, patIdx) {
 				return true
@@ -119,17 +119,16 @@ func matchLikeHelper(str, pattern string, strIdx, patIdx int) bool {
 		return false
 	}
 
-	// Если строка закончилась - не совпадение
 	if strIdx == len(str) {
 		return false
 	}
 
-	// Обработка _
+	// обработка _
 	if pattern[patIdx] == '_' {
 		return matchLikeHelper(str, pattern, strIdx+1, patIdx+1)
 	}
 
-	// Обычный символ
+	// обработка обычных символов
 	if str[strIdx] == pattern[patIdx] {
 		return matchLikeHelper(str, pattern, strIdx+1, patIdx+1)
 	}

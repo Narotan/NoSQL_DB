@@ -6,12 +6,10 @@ import (
 
 // MatchDocument проверяет, соответствует ли документ условиям запроса
 func MatchDocument(doc map[string]any, query map[string]any) bool {
-	// Пустой запрос - все документы подходят
 	if len(query) == 0 {
 		return true
 	}
 
-	// Проверяем логические операторы
 	if orConditions, ok := query["$or"]; ok {
 		return matchOr(doc, orConditions)
 	}
@@ -20,7 +18,7 @@ func MatchDocument(doc map[string]any, query map[string]any) bool {
 		return matchAnd(doc, andConditions)
 	}
 
-	// Неявный AND - все условия должны выполняться
+	// неявный AND - все условия должны выполняться
 	for field, condition := range query {
 		if !matchField(doc, field, condition) {
 			return false
@@ -34,12 +32,11 @@ func MatchDocument(doc map[string]any, query map[string]any) bool {
 func matchField(doc map[string]any, field string, condition any) bool {
 	fieldValue, exists := doc[field]
 
-	// Если поле не существует в документе
 	if !exists {
 		return false
 	}
 
-	// Если condition - это map, значит это операторы сравнения
+	// если condition - это map, значит это операторы сравнения
 	if condMap, ok := condition.(map[string]any); ok {
 		for operator, value := range condMap {
 			if !applyOperator(fieldValue, operator, value) {
@@ -49,11 +46,10 @@ func matchField(doc map[string]any, field string, condition any) bool {
 		return true
 	}
 
-	// Иначе это простое равенство ($eq по умолчанию)
 	return CompareEq(fieldValue, condition)
 }
 
-// applyOperator применяет оператор сравнения
+// applyOperator применяет оператор к значению поля
 func applyOperator(fieldValue any, operator string, queryValue any) bool {
 	switch operator {
 	case "$eq":

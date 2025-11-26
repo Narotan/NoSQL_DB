@@ -1,6 +1,5 @@
 package query
 
-// Query представляет распаршенный JSON-запрос
 type Query struct {
 	Conditions map[string]any
 }

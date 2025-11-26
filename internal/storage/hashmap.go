@@ -23,10 +23,10 @@ func NewHashMap() *HashMap {
 	}
 }
 
-// Hash (полиномиальная хеш-функция)
+// hash (полиномиальная хеш-функция)
 func (h *HashMap) Hash(key string) int {
 	var hash uint32
-	const prime uint32 = 31
+	const prime uint32 = 3
 
 	for i := 0; i < len(key); i++ {
 		hash = hash*prime + uint32(key[i])
@@ -54,7 +54,12 @@ func (h *HashMap) Put(key string, value any) {
 		current = current.Next
 	}
 
-	newPair := &Pair{Key: key, Value: value, Next: h.Buckets[index]}
+	newPair := &Pair{
+		Key:   key,
+		Value: value,
+		Next:  h.Buckets[index],
+	}
+
 	h.Buckets[index] = newPair
 	h.Size++
 }
