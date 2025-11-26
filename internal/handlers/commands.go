@@ -1,36 +1,15 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"nosql_db/internal/index"
 	"nosql_db/internal/operators"
 	"nosql_db/internal/query"
 	"nosql_db/internal/storage"
-	"os"
 )
 
-func main() {
-	if len(os.Args) < 3 {
-		printUsage()
-		log.Fatal()
-	}
-
-	dbName := os.Args[1]
-	command := os.Args[2]
-
-	var jsonQuery string
-	if len(os.Args) >= 4 {
-		jsonQuery = os.Args[3]
-	}
-
-	if err := executeCommand(dbName, command, jsonQuery); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func executeCommand(dbName, command, jsonQuery string) error {
+func ExecuteCommand(dbName, command, jsonQuery string) error {
 	switch command {
 	case "insert":
 		return cmdInsert(dbName, jsonQuery)
@@ -266,15 +245,15 @@ func cmdCreateIndex(dbName, fieldName string) error {
 	return nil
 }
 
-func printUsage() {
+func PrintUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("  no_sql_dbms <database_name> insert '<json_document>'")
-	fmt.Println("  no_sql_dbms <database_name> find '<json_query>'")
-	fmt.Println("  no_sql_dbms <database_name> delete '<json_query>'")
-	fmt.Println("  no_sql_dbms <database_name> create_index <field_name>")
+	fmt.Println("  server <database_name> insert '<json_document>'")
+	fmt.Println("  server <database_name> find '<json_query>'")
+	fmt.Println("  server <database_name> delete '<json_query>'")
+	fmt.Println("  server <database_name> create_index <field_name>")
 	fmt.Println("\nExamples:")
-	fmt.Println(`  no_sql_dbms my_database insert '{"name": "Alice", "age": 25, "city": "London"}'`)
-	fmt.Println(`  no_sql_dbms my_database find '{"age": 25}'`)
-	fmt.Println(`  no_sql_dbms my_database find '{"age": {"$gt": 20}}'`)
-	fmt.Println(`  no_sql_dbms my_database delete '{"name": {"$like": "A%"}}'`)
+	fmt.Println(`  server my_database insert '{"name": "Alice", "age": 25, "city": "London"}'`)
+	fmt.Println(`  server my_database find '{"age": 25}'`)
+	fmt.Println(`  server my_database find '{"age": {"$gt": 20}}'`)
+	fmt.Println(`  server my_database delete '{"name": {"$like": "A%"}}'`)
 }

@@ -7,10 +7,12 @@ import (
 	"nosql_db/internal/index"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
 type Collection struct {
+	mutex   sync.RWMutex
 	Name    string
 	Data    *HashMap
 	Indexes map[string]*index.BTree
@@ -77,6 +79,9 @@ func (c *Collection) Save() error {
 }
 
 func (c *Collection) Insert(doc map[string]any) (string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	id := generateID()
 	doc["_id"] = id
 	c.Data.Put(id, doc)
@@ -99,6 +104,8 @@ func (c *Collection) updateIndexesOnInsert(docID string, doc map[string]any) {
 
 // getByID получает документ по _id
 func (c *Collection) GetByID(id string) (map[string]any, bool) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	val, ok := c.Data.Get(id)
 	if !ok {
 		return nil, false
@@ -113,6 +120,9 @@ func (c *Collection) GetByID(id string) (map[string]any, bool) {
 
 // delete удаляет документ по _id
 func (c *Collection) Delete(id string) bool {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	// получаем документ перед удалением для обновления индексов
 	doc, ok := c.GetByID(id)
 	if !ok {
