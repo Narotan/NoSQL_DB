@@ -1,26 +1,17 @@
-package main
+package mainq
 
 import (
 	"log"
-	"nosql_db/internal/handlers"
-	"os"
+	"nosql_db/internal/config"
+	"nosql_db/internal/server"
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		handlers.PrintUsage()
-		log.Fatal()
-	}
+	cfg := config.Load()
 
-	dbName := os.Args[1]
-	command := os.Args[2]
+	srv := server.New(cfg.Host + ":" + cfg.Port)
 
-	var jsonQuery string
-	if len(os.Args) >= 4 {
-		jsonQuery = os.Args[3]
-	}
-
-	if err := handlers.ExecuteCommand(dbName, command, jsonQuery); err != nil {
+	if err := srv.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
