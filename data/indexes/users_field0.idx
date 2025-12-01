@@ -1,0 +1,10 @@
+{
+  "field": "field0",
+  "order": 64,
+  "nodes": [
+    {
+      "is_leaf": true,
+      "keys": []
+    }
+  ]
+}
