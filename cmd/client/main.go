@@ -15,9 +15,8 @@ import (
 )
 
 var (
-	host     = flag.String("host", "localhost", "Server host address")
-	port     = flag.String("port", "8080", "Server port")
-	database = flag.String("database", "default_db", "Default database name")
+	host = flag.String("host", "localhost", "Server host address")
+	port = flag.String("port", "8080", "Server port")
 )
 
 func main() {

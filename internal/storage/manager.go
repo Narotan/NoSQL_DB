@@ -5,10 +5,6 @@ import (
 	"sync"
 )
 
-// =====================================
-// Типы для очереди write-операций
-// =====================================
-
 // WriteJob — задача в очереди модификации
 type WriteJob struct {
 	DBName     string                                      // имя базы/коллекции
@@ -24,18 +20,14 @@ type WriteResult struct {
 	Error        error    // ошибка, если есть
 }
 
-// =====================================
-// Менеджер коллекций с очередью
-// =====================================
-
 type CollectionMng struct {
 	mu          sync.Mutex
 	collections map[string]*Collection
-	writeQueue  chan WriteJob // очередь на запись
-	stopChan    chan struct{} // для graceful shutdown
+	writeQueue  chan WriteJob
+	stopChan    chan struct{}
 }
 
-const writeQueueSize = 100 // размер буфера очереди
+const writeQueueSize = 100
 
 func NewManager() *CollectionMng {
 	m := &CollectionMng{
@@ -43,16 +35,11 @@ func NewManager() *CollectionMng {
 		writeQueue:  make(chan WriteJob, writeQueueSize),
 		stopChan:    make(chan struct{}),
 	}
-	// Запускаем воркер в отдельной горутине
 	go m.worker()
 	return m
 }
 
 var GlobalManager = NewManager()
-
-// =====================================
-// Получение коллекции
-// =====================================
 
 func (m *CollectionMng) GetCollection(name string) (*Collection, error) {
 	m.mu.Lock()
@@ -76,10 +63,6 @@ func (m *CollectionMng) GetCollection(name string) (*Collection, error) {
 	return coll, nil
 }
 
-// =====================================
-// Воркер очереди — обрабатывает задачи по одной
-// =====================================
-
 func (m *CollectionMng) worker() {
 	for {
 		select {
@@ -92,7 +75,6 @@ func (m *CollectionMng) worker() {
 	}
 }
 
-// processJob выполняет одну задачу
 func (m *CollectionMng) processJob(job WriteJob) WriteResult {
 	coll, err := m.GetCollection(job.DBName)
 	if err != nil {
@@ -106,11 +88,6 @@ func (m *CollectionMng) processJob(job WriteJob) WriteResult {
 	return result
 }
 
-// =====================================
-// Enqueue — постановка задачи в очередь
-// =====================================
-
-// Enqueue ставит задачу в очередь и ждёт результат
 func (m *CollectionMng) Enqueue(dbName string, operation func(coll *Collection) (WriteResult, error)) WriteResult {
 	resultChan := make(chan WriteResult, 1)
 	job := WriteJob{
@@ -122,7 +99,6 @@ func (m *CollectionMng) Enqueue(dbName string, operation func(coll *Collection) 
 	return <-resultChan
 }
 
-// Stop останавливает воркер (для graceful shutdown)
 func (m *CollectionMng) Stop() {
 	close(m.stopChan)
 }
