@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	log.Println("Starting NoSQLdb server...")
 	cfg := config.Load()
 
 	srv := server.New(cfg.Host + ":" + cfg.Port)

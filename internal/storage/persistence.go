@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // LoadCollection загружает коллекцию из базы данных
@@ -16,6 +17,11 @@ func LoadCollection(name string) (*Collection, error) {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
+	}
+
+	// Файл может существовать, но быть пустым или содержать только пробелы
+	if len(strings.TrimSpace(string(bytes))) == 0 {
+		return NewCollection(name), nil
 	}
 	var raw map[string]any
 	if err := json.Unmarshal(bytes, &raw); err != nil {
